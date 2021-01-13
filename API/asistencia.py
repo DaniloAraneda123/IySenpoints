@@ -1,16 +1,17 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from datetime import datetime
-from modelo import *
+from modelo import conectar
 import json
 
 
 # Recibir el horario del profesor
 def horarioProfesor():
     try:
+        conn,cursor=conectar()
         rut=request.json['rut']
         consulta = '''
-            SELECT ID_Bloque,Nombre,Horario_Inicio,ID_sala
+            SELECT ID_Bloque,Nombre,Horario_Inicio,ID_sala,Dia
 	        FROM horario_clase AS HC, clase AS C
 	        WHERE C.ID_clase = HC.ID_clase AND
             Rut_Profesor  =  ?
@@ -20,6 +21,7 @@ def horarioProfesor():
         results = []
         for row in data.fetchall():
             results.append(dict(zip(columns, row)))
+        conn.close()
     except Exception as e:
         print("Ocurrió un error", e)
     return json.dumps(results, indent=4, default=str)
@@ -29,6 +31,7 @@ horarioProfesor.methods=['POST']
 #Consultar todos los estudiantes de un horario
 def alumnosClase():
     try:
+        conn,cursor=conectar()
         ID_bloque=request.json['id']
         consulta = '''
             SELECT nombre, ApellidoP, HP.rut
@@ -42,8 +45,10 @@ def alumnosClase():
         results = []
         for row in data.fetchall():
             results.append(dict(zip(columns, row)))
+        conn.close()
     except Exception as e:
         print("Ocurrió un error", e)
+        results=[{"status":"error"}]
     return jsonify(results)
 alumnosClase.methods=['POST']
 
@@ -56,11 +61,13 @@ def registrarAsistencia():
     '''
     estado = "OK"
     try:
+        conn,cursor=conectar()
         list = request.json
         for dict in list:
             cursor.execute(
                 consulta, (dict['rut'], dict['ID_Bloque'], dict['fecha'], dict['tipo_asistencia']))
         conn.commit()
+        conn.close()
     except Exception as e:
         print("Ocurrió un error", e)
         estado = "Error"
@@ -74,6 +81,7 @@ def verAsistencias():
     fecha = request.json['fecha']
     ID = request.json['id']
     try:
+        conn,cursor=conectar()
         consulta = '''
             SELECT  Nombre, ApellidoP, P.rut  
             FROM  asistencia AS A,Persona AS P  
@@ -85,6 +93,7 @@ def verAsistencias():
         results = []
         for row in data.fetchall():
             results.append(dict(zip(columns, row)))
+        conn.close()
     except Exception as e:
         print("Ocurrió un error", e)
     return jsonify(results)

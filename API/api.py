@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
-from modelo import *
 from datetime import datetime
 import json,perfilUsuario,asistencia,administracion
 
@@ -43,11 +42,21 @@ app.add_url_rule('/verAsistencias',view_func=asistencia.verAsistencias)
 app.add_url_rule('/notificar',view_func=administracion.notificar)
 
 
-#Retorna una lista con los estudiantes que tubieron un contacto estrecho
-#(POST: inicio,fin,rut)
+#Retorna una lista con los estudiantes que tubieron un contacto estrecho de hoy a 15 dias pasados
+#(POST: rut)
 app.add_url_rule('/contactosEstrechos',view_func=administracion.contactoEstrecho)
 
 
+#Retorna una lista con los estudiantes que tubieron un contacto estrecho
+#(POST: rut)
+app.add_url_rule('/getNotificaciones',view_func=administracion.getNotificaciones)
+
+
+#Retorna una lista con los estudiantes que tubieron un contacto estrecho, parametros rango fechas.
+#(POST: inicio,fin,rut)
+app.add_url_rule('/contactosEstrechosP',view_func=administracion.contactoEstrechoP)
+
 if __name__ == '__main__':
-    app.run(host='192.168.0.103',debug=True, port=5000)
+    #app.run(debug=True, port=5000)
+    app.run(host='192.168.0.102',debug=True, port=5000)
     
